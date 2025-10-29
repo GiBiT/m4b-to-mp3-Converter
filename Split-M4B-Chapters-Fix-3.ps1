@@ -42,7 +42,7 @@ function Split-M4B-Chapters {
 
         Write-Host "🎧 Extracting: $safeTitle"
 
-        # Extract and encode to MP3 (VBR)
+        # Extract and encode to M4A (CBR)
         ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -c:a aac -b:a 128k -metadata title="$title" "$outFile"
     }
 
