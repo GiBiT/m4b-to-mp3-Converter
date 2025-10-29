@@ -21,7 +21,9 @@ The issue with the "Direct Command Mode" is that you may not have the right file
 
 ## Known Issue(s)
 
-`Assertion failed: vbrsf[sfb] >= vbrsfmin[sfb], file ../../lame-3.100/libmp3lame/vbrquantize.c, line 783`
+```
+Assertion failed: vbrsf[sfb] >= vbrsfmin[sfb], file ../../lame-3.100/libmp3lame/vbrquantize.c, line 783
+```
 
 ### 3 Possible Ways to Fix
 #### Fix 1
