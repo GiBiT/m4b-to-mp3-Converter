@@ -3,6 +3,12 @@ Take an M4A or M4B file and split it into MP3 chapters.
 
 Works well to separate Audiobooks into a Plex Tracklist
 
+## Requirements
+- ffmpeg
+- Windows Powershell
+- mp3tag (if you want to rename the chapters)
+
+
 ## How to Run
 
 Interactive Mode
