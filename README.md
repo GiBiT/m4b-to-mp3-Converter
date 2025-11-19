@@ -27,6 +27,9 @@ The issue with the "Direct Command Mode" is that you may not have the right file
 2. Type `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 3. Then re-run the command
 
+Another possible fix if you're getting issues getting it to run: (Obviously Replace {File} with your thing)
+`powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1' -InputFile 'File.m4b'"`
+
 ## How It Works
 1. Once you run that code it will take any chapters that it finds in the input file and convert it to individual mp3 files (unless you're running Fix-2 which converts to m4a).
 2. It will try and find an existing Chapter Name and if it finds one it will use that.
