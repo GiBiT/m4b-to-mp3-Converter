@@ -27,7 +27,7 @@ The issue with the "Direct Command Mode" is that you may not have the right file
 2. Type `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 3. Then re-run the command
 
-Another possible fix if you're getting issues getting it to run: (Obviously Replace {File} with your thing)
+Another possible fix if you're getting issues getting it to run: (Obviously Replace {File} with your filename)
 `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1' -InputFile 'File.m4b'"`
 
 ## How It Works
