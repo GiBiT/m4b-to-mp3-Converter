@@ -11,24 +11,27 @@ Works well to separate Audiobooks into a Plex Tracklist
 
 ## How to Run
 
-Interactive Mode
+### Interactive Mode
 1. Open Powershell
-2. Run `.\Split-M4B-Chapters.ps1` or paste the contents of the `.ps1`
+2. Run `.\Split-M4B-Chapters-Prompt.ps1` or paste the contents of the `.ps1`
 3. Type the Filepath (ex. C:\Downloads\File.m4b)
 4. Wait for it to complete
 
-Direct Command Mode
+#### Troubleshooting
+If you get an error regarding Unauthorized. Try this: `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters-Prompt.ps1'"`
+
+### Direct Command Mode
 1. Open Powershell
 2. Run `.\Split-M4B-Chapters.ps1 -InputFile "C:\Downloads\File.m4b"`
 3. Wait for it to complete
 
-The issue with the "Direct Command Mode" is that you may not have the right file permissions. To solve that:
+If you encounter an issue with the "Direct Command Mode" is that you may not have the right file permissions. To solve that:
 1. Open Powershell
 2. Type `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 3. Then re-run the command
 
-Another possible fix if you're getting issues getting it to run: (Obviously Replace {File} with your filename)
-`powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1' -InputFile 'File.m4b'"`
+If that didn't fix it, try this: `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1' -InputFile 'File.m4b'"`
+or direct path names: `powershell -ExecutionPolicy Bypass -File "C:\Downloads\Split-M4B-Chapters.ps1" -InputFile "C:\Downloads\File.m4b"`
 
 ## How It Works
 1. Once you run that code it will take any chapters that it finds in the input file and convert it to individual mp3 files (unless you're running Fix-2 which converts to m4a).
@@ -50,51 +53,6 @@ To rename the chapters you can do several things:
 
 _If you want to organize for Plex and you want to separate the book into parts, you can do so by adjusting the Discnumber. Just remember if you want Discnumber to work in Plex, you have to restart the Track at 1 per new discnumber_
 
-## Known Issue(s)
-
-```
-Assertion failed: vbrsf[sfb] >= vbrsfmin[sfb], file ../../lame-3.100/libmp3lame/vbrquantize.c, line 783
-```
-
-### 3 Possible Ways to Fix
-#### Fix 1
-Replace this line in your script
-```
-ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -acodec libmp3lame -qscale:a 2 -metadata title="$title" "$outFile"
-```
-With: 
-```
-ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -acodec libmp3lame -b:a 128k -metadata title="$title" "$outFile"
-```
-
-Alternatively: Run `.\Split-M4B-Chapters-Fix-1.ps1 -InputFile "C:\Downloads\File.m4b"` 
-
-_Fix 1 did compile 1 out of 3 different files with this same issue_
-
-#### Fix 2
-You can pad each extract by 0.05s at the start and end to avoid “zero-length” edge cases:
-
-Right before your ffmpeg line, add:
-```
-if ($end - $start -lt 0.1) { $end = $start + 0.2 }
-$startAdj = [math]::Max($start - 0.05, 0)
-$endAdj = $end + 0.05
-```
-Then use `$startAdj` and `$endAdj`:
-```
-ffmpeg -v quiet -i "$InputFile" -ss $startAdj -to $endAdj -acodec libmp3lame -qscale:a 2 -metadata title="$title" "$outFile"
-```
-
-Alternatively: Run `.\Split-M4B-Chapters-Fix-2.ps1 -InputFile "C:\Downloads\File.m4b"` 
-
-#### Fix 3
-Output M4A instead of MP3
-
-Replace these file lines
-```
-$outFile = Join-Path $OutputDir "$safeTitle.m4a"
-ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -c:a aac -b:a 128k -metadata title="$title" "$outFile"
-```
-
-Alternatively: Run `.\Split-M4B-Chapters-Fix-3.ps1 -InputFile "C:\Downloads\File.m4b"` 
+## Encountering Issue(s)
+Navigate to the [Fixes](Fixes) Directory and open the [Fixes/Usage.md](Usage.md) File
 

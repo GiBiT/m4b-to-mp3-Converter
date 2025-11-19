@@ -1,8 +1,11 @@
-function Split-M4B-Chapters {
+function Split-M4B-Chapters-Prompt-Fix-3 {
     param(
         [Parameter(Mandatory = $true)]
         [string]$InputFile
     )
+	
+	# Force UTF-8 output so PowerShell doesn't corrupt characters
+	[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
     # Ensure file exists
     if (-not (Test-Path $InputFile)) {
@@ -34,21 +37,21 @@ function Split-M4B-Chapters {
         $ch = $chapters[$i]
         $start = [double]$ch.start_time
         $end = [double]$ch.end_time
-        $title = if ($ch.tags.title -and $ch.tags.title.Trim() -ne "") { $ch.tags.title } else { "Chapter_$i" }
 
-        # Clean filename
-        $safeTitle = ($title -replace '[\\/:*?"<>|]', '_')
-        $outFile = Join-Path $OutputDir "$safeTitle.m4a"
-
-        Write-Host "Extracting: $safeTitle"
+		# Clean remaining forbidden characters in Title
+		$title = if ($ch.tags.title -and $ch.tags.title.Trim() -ne "") { $ch.tags.title } else { "Chapter_$i" }
+		$title = $title -replace "’","'" -replace ':', ' -'
+		$safeTitle = ($title -replace '[\\/*?"<>|]', '_')
+		$outFile = Join-Path $OutputDir "$safeTitle.mp3"
+		Write-Host "Extracting: $safeTitle"
 
         # Extract and encode to M4A (CBR)
         ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -c:a aac -b:a 128k -metadata title="$title" "$outFile"
     }
 
-    Write-Host "`Done! Chapters saved in: $OutputDir"
+    Write-Host "`nDone! Chapters saved in: $OutputDir"
     Start-Process explorer $OutputDir
 }
 
-# 👇 Run interactively (will prompt for InputFile)
-Split-M4B-Chapters
+# Run interactively (will prompt for InputFile)
+Split-M4B-Chapters-Prompt-Fix-3

@@ -36,7 +36,7 @@ for ($i = 0; $i -lt $chapters.Count; $i++) {
 	$ch = $chapters[$i]
 	$start = [double]$ch.start_time
 	$end = [double]$ch.end_time
-	
+
 	# Clean remaining forbidden characters in Title
 	$title = if ($ch.tags.title -and $ch.tags.title.Trim() -ne "") { $ch.tags.title } else { "Chapter_$i" }
 	$title = $title -replace "’","'" -replace ':', ' -'
@@ -44,8 +44,12 @@ for ($i = 0; $i -lt $chapters.Count; $i++) {
 	$outFile = Join-Path $OutputDir "$safeTitle.mp3"
 	Write-Host "Extracting: $safeTitle"
 
+	if ($end - $start -lt 0.1) { $end = $start + 0.2 }
+	$startAdj = [math]::Max($start - 0.05, 0)
+	$endAdj = $end + 0.05
+
 	# Extract and encode to MP3 (VBR)
-	ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -acodec libmp3lame -qscale:a 2 -metadata title="$title" "$outFile"
+	ffmpeg -v quiet -i "$InputFile" -ss $startAdj -to $endAdj -acodec libmp3lame -qscale:a 2 -metadata title="$title" "$outFile"
 }
 
 Write-Host "`Done! Chapters saved in: $OutputDir"
