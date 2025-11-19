@@ -19,7 +19,7 @@ Interactive Mode
 
 Direct Command Mode
 1. Open Powershell
-2. Run `.\Split-M4B-Chapters.ps1 -InputFile "C:\Downloads\File.m4b.m4b"`
+2. Run `.\Split-M4B-Chapters.ps1 -InputFile "C:\Downloads\File.m4b"`
 3. Wait for it to complete
 
 The issue with the "Direct Command Mode" is that you may not have the right file permissions. To solve that:
