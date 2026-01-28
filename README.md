@@ -13,25 +13,12 @@ Works well to separate Audiobooks into a Plex Tracklist
 
 ### Interactive Mode
 1. Open Powershell
-2. Run `.\Split-M4B-Chapters-Prompt.ps1` or paste the contents of the `.ps1`
+2. Run `.\Split-M4B-Chapters.ps1` or paste the contents of the `.ps1`
 3. Type the Filepath (ex. C:\Downloads\File.m4b)
 4. Wait for it to complete
 
 #### Troubleshooting
-If you get an error regarding Unauthorized. Try this: `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters-Prompt.ps1'"`
-
-### Direct Command Mode
-1. Open Powershell
-2. Run `.\Split-M4B-Chapters.ps1 -InputFile "C:\Downloads\File.m4b"`
-3. Wait for it to complete
-
-If you encounter an issue with the "Direct Command Mode" is that you may not have the right file permissions. To solve that:
-1. Open Powershell
-2. Type `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
-3. Then re-run the command
-
-If that didn't fix it, try this: `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1' -InputFile 'File.m4b'"`
-or direct path names: `powershell -ExecutionPolicy Bypass -File "C:\Downloads\Split-M4B-Chapters.ps1" -InputFile "C:\Downloads\File.m4b"`
+If you get an error regarding Unauthorized. Try this: `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1'"`
 
 ## How It Works
 1. Once you run that code it will take any chapters that it finds in the input file and convert it to individual mp3 files (unless you're running Fix-2 which converts to m4a).
@@ -52,7 +39,4 @@ To rename the chapters you can do several things:
 3. If your book does not start with Chapter 1, for example a prologue you can highlight all chapters except `001` and do this in the "Format string:" input `Chapter $sub(%track%,1)` and you can adjust your `$sub(%track%,1)` to `$sub(%track%,2)` if you want to go two chapters back, or even use the title instead of the track like this: `Chapter $sub(%title%,1)`
 
 _If you want to organize for Plex and you want to separate the book into parts, you can do so by adjusting the Discnumber. Just remember if you want Discnumber to work in Plex, you have to restart the Track at 1 per new discnumber_
-
-## Encountering Issue(s)
-Navigate to the [Fixes](Fixes) Directory and open the [Fixes/Usage.md](Usage.md) File
 

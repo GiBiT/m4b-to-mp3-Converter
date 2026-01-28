@@ -1,52 +1,68 @@
+# M4B Chapter Splitter (Numbered Filenames, Descriptive Metadata)
 param(
-	[Parameter(Mandatory = $true)]
-	[string]$InputFile
+    [Parameter(Mandatory=$true, Position=0)]
+    [string]$InputFile
 )
 
-# Force UTF-8 output so PowerShell doesn't corrupt characters
+# Force UTF-8 and fix console encoding
+$OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-# Ensure file exists
 if (-not (Test-Path $InputFile)) {
-	Write-Error "File not found: $InputFile"
-	exit 1
+    Write-Host "Error: File '$InputFile' not found" -ForegroundColor Red
+    exit 1
 }
 
-# Get file name and output folder
+Write-Host "Extracting metadata..." -ForegroundColor Yellow
+$metadataJson = & ffprobe -v quiet -print_format json -show_format -show_chapters $InputFile | ConvertFrom-Json
+
+# 1. Extract and Clean Global Metadata
+$globalTags = $metadataJson.format.tags
+$bookTitle = if ($globalTags.album) { $globalTags.album } else { $globalTags.title }
+$bookArtist = if ($globalTags.artist) { $globalTags.artist } else { $globalTags.album_artist }
+
+# Fix encoding/quotes in global tags
+$bookTitle = $bookTitle -replace "[\u2018\u2019]", "'" -replace "[\u201C\u201D]", '"'
+$bookArtist = $bookArtist -replace "[\u2018\u2019]", "'" -replace "[\u201C\u201D]", '"'
+
+# 2. Setup Output Directory
 $BaseName = [System.IO.Path]::GetFileNameWithoutExtension($InputFile)
 $OutputDir = Join-Path ([System.IO.Path]::GetDirectoryName($InputFile)) "$BaseName-chapters"
-
-# Create output folder
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
-Write-Host "Splitting $InputFile into chapters..."
-Write-Host "Output folder: $OutputDir`n"
+$chapterCount = $metadataJson.chapters.Count
+$chapterNum = 1
 
-# Get chapters JSON from ffprobe
-$chaptersJson = ffprobe -v quiet -print_format json -show_chapters "$InputFile" | Out-String
-$chapters = ($chaptersJson | ConvertFrom-Json).chapters
+foreach ($chapter in $metadataJson.chapters) {
+    $startTime = $chapter.start_time
+    $duration = [double]$chapter.end_time - [double]$chapter.start_time
+    
+    # 3. Get Chapter Title for Metadata
+    $rawTitle = ($chapter.tags.title, $chapter.tags.TITLE | Where-Object {$_})[0]
+    if (-not $rawTitle) { $rawTitle = "Chapter $chapterNum" }
+    
+    # Clean encoding/quotes for the ID3 tag
+    $rawTitle = $rawTitle -replace "[\u2018\u2019]", "'" -replace "[\u201C\u201D]", '"'
+    
+    # 4. Generate Numeric Filename (001.mp3)
+    # "D3" ensures 3-digit padding (001, 002...)
+    $fileName = "$($chapterNum.ToString('D3')).mp3"
+    $outputFile = Join-Path $OutputDir $fileName
 
-if (-not $chapters) {
-	Write-Error "No chapters found in $InputFile"
-	exit 1
+    Write-Host "Processing: $fileName -> $rawTitle" -ForegroundColor Cyan
+
+    # 5. Run FFMPEG
+    & ffmpeg -ss $startTime -t $duration -i $InputFile `
+        -vn -acodec libmp3lame -q:a 2 `
+        -metadata title="$rawTitle" `
+        -metadata album="$bookTitle" `
+        -metadata artist="$bookArtist" `
+        -metadata album_artist="$bookArtist" `
+        -metadata track="$chapterNum/$chapterCount" `
+        -id3v2_version 3 `
+        -y $outputFile -loglevel error
+
+    $chapterNum++
 }
 
-# Loop through each chapter
-for ($i = 0; $i -lt $chapters.Count; $i++) {
-	$ch = $chapters[$i]
-	$start = [double]$ch.start_time
-	$end = [double]$ch.end_time
-	
-	# Clean remaining forbidden characters in Title
-	$title = if ($ch.tags.title -and $ch.tags.title.Trim() -ne "") { $ch.tags.title } else { "Chapter_$i" }
-	$title = $title -replace "’","'" -replace ':', ' -'
-	$safeTitle = ($title -replace '[\\/*?"<>|]', '_')
-	$outFile = Join-Path $OutputDir "$safeTitle.mp3"
-	Write-Host "Extracting: $safeTitle"
-
-	# Extract and encode to MP3 (VBR)
-	ffmpeg -v quiet -i "$InputFile" -ss $start -to $end -acodec libmp3lame -qscale:a 2 -metadata title="$title" "$outFile"
-}
-
-Write-Host "`Done! Chapters saved in: $OutputDir"
-Start-Process explorer $OutputDir
+Write-Host "`n✓ Complete! Files are in: $OutputDir" -ForegroundColor Green
