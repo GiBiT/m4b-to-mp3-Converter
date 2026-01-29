@@ -1,5 +1,5 @@
 # M4B to MP3 Splitter/Converter
-Take an M4A or M4B file and split it into MP3 chapters. 
+Takes a M4B file and split it into MP3 chapters. 
 
 Works well to separate Audiobooks into a Plex Tracklist
 
@@ -12,16 +12,19 @@ Works well to separate Audiobooks into a Plex Tracklist
 ## How to Run
 
 ### Interactive Mode
-1. Open Powershell
+1. Open Windows Powershell
 2. Run `.\Split-M4B-Chapters.ps1` or paste the contents of the `.ps1`
-3. Type the Filepath (ex. C:\Downloads\File.m4b)
+3. Type the Filepath as your input file (ex. C:\Downloads\File.m4b)
 4. Wait for it to complete
+5. You'll see a folder created in the same location as your input file that is suffixed with `-chapters`
 
 #### Troubleshooting
 If you get an error regarding Unauthorized. Try this: `powershell -ExecutionPolicy Bypass -Command "& '.\Split-M4B-Chapters.ps1'"`
 
+Sometimes if you just take the content of the ps1 and copy/paste it into a powershell environment, it'll work. 
+
 ## How It Works
-1. Once you run that code it will take any chapters that it finds in the input file and convert it to individual mp3 files
+1. Once you run that code it will take any chapters that it finds in the input file and convert it to individual mp3 files (unless you're running Fix-2 which converts to m4a).
 2. It will try and find an existing Chapter Name and if it finds one it will use that.
 3. If it does not find a Chapter Name your Chapter title will be `001` and increment in that format.
 
